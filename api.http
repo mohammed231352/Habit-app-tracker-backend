@@ -1,0 +1,186 @@
+@baseUrl = http://localhost:5000/api
+@token = YOUR_JWT_TOKEN_HERE
+
+### --------------------------------
+### Health Check
+### --------------------------------
+
+GET {{baseUrl}}/health
+
+### --------------------------------
+### Auth Service
+### --------------------------------
+
+### Register a new user
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### Login User
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "Password123!"
+}
+
+### Forgot Password
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "test@example.com"
+}
+
+### Reset Password (requires token from email)
+POST {{baseUrl}}/auth/reset-password/YOUR_RESET_TOKEN
+Content-Type: application/json
+
+{
+  "password": "NewPassword123!"
+}
+
+### --------------------------------
+### User Service
+### --------------------------------
+
+### Get User Profile
+GET {{baseUrl}}/user/profile
+Authorization: Bearer {{token}}
+
+### Update User Profile
+PUT {{baseUrl}}/user/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Updated Test User"
+}
+
+### --------------------------------
+### Dashboard Service (Service 3) - Mohamed (231352)
+### --------------------------------
+
+### Get Dashboard Overview Stats
+GET {{baseUrl}}/dashboard/stats
+Authorization: Bearer {{token}}
+
+### Get Dashboard Stats for Specific Habit
+GET {{baseUrl}}/dashboard/stats?habitId=YOUR_HABIT_ID
+Authorization: Bearer {{token}}
+
+### Get Daily Completions (Last 7 days)
+GET {{baseUrl}}/dashboard/daily?startDate=2025-01-01&endDate=2025-01-07
+Authorization: Bearer {{token}}
+
+### Get Daily Completions with Habit Filter
+GET {{baseUrl}}/dashboard/daily?startDate=2025-01-01&endDate=2025-01-07&habitId=YOUR_HABIT_ID
+Authorization: Bearer {{token}}
+
+### Get Weekly Trends (Last 4 weeks)
+GET {{baseUrl}}/dashboard/weekly
+Authorization: Bearer {{token}}
+
+### Get Weekly Trends with Custom Weeks
+GET {{baseUrl}}/dashboard/weekly?weeks=8
+Authorization: Bearer {{token}}
+
+### Get Habit Performance Ranking
+GET {{baseUrl}}/dashboard/performance
+Authorization: Bearer {{token}}
+
+### Get Habits List (for filter dropdown)
+GET {{baseUrl}}/dashboard/habits
+Authorization: Bearer {{token}}
+
+### --------------------------------
+### Habit Service (Service 2)
+### --------------------------------
+
+### Get All Habits
+GET {{baseUrl}}/habits
+Authorization: Bearer {{token}}
+
+### Create New Habit
+POST {{baseUrl}}/habits
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Morning Exercise",
+  "description": "Do 30 minutes of exercise every morning"
+}
+
+### Get Single Habit
+GET {{baseUrl}}/habits/YOUR_HABIT_ID
+Authorization: Bearer {{token}}
+
+### Update Habit
+PUT {{baseUrl}}/habits/YOUR_HABIT_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Updated Morning Exercise",
+  "description": "Updated description"
+}
+
+### Delete Habit
+DELETE {{baseUrl}}/habits/YOUR_HABIT_ID
+Authorization: Bearer {{token}}
+
+### Mark Habit as Complete
+POST {{baseUrl}}/habits/YOUR_HABIT_ID/complete
+Authorization: Bearer {{token}}
+
+### --------------------------------
+### Notification Service (Service 4)
+### --------------------------------
+
+### Get Notifications
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
+
+### Get Notifications with Pagination
+GET {{baseUrl}}/notifications?page=1&limit=10
+Authorization: Bearer {{token}}
+
+### Mark Notification as Read
+PATCH {{baseUrl}}/notifications/YOUR_NOTIFICATION_ID/read
+Authorization: Bearer {{token}}
+
+### Mark All Notifications as Read
+PATCH {{baseUrl}}/notifications/read-all
+Authorization: Bearer {{token}}
+
+### Delete Notification
+DELETE {{baseUrl}}/notifications/YOUR_NOTIFICATION_ID
+Authorization: Bearer {{token}}
+
+### Get Notification Settings
+GET {{baseUrl}}/notifications/settings
+Authorization: Bearer {{token}}
+
+### Update Notification Settings
+PUT {{baseUrl}}/notifications/settings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "habitRemindersEnabled": true,
+  "streakAlertsEnabled": true,
+  "defaultReminderTime": "09:00"
+}
+
+### --------------------------------
+### Debug Service
+### --------------------------------
+
+### Get All Users (for debugging)
+GET http://localhost:5000/debug/users
