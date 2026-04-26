@@ -1,11 +1,7 @@
 const express = require('express');
-
-
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dotenv = require('dotenv');
-
-
 
 // Load env vars
 dotenv.config();
@@ -31,12 +27,29 @@ app.use(cors({
     'http://localhost:5173',
     'http://localhost:5174',
     'http://localhost:5175',
-    'https://habit-tracker-frontend.vercel.app', // Production Vercel URL (update after deployment)
+    'https://habit-app-tracker-frontend.vercel.app', // Update with your actual frontend URL
   ],
   credentials: true,
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// ─── Database Connection ───────────────────────────────────────────────────────
+let isConnected = false;
+
+const connectDB = async () => {
+  if (isConnected) return;
+  try {
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      family: 4,
+      serverSelectionTimeoutMS: 5000,
+    });
+    isConnected = true;
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+  } catch (error) {
+    console.error(`❌ MongoDB connection error: ${error.message}`);
+  }
+};
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -48,6 +61,7 @@ app.use('/api/notifications', notificationRoutes);
 
 // Special Debug Route to see invisible database contents directly in browser
 app.get('/debug/users', async (req, res) => {
+  await connectDB();
   const User = require('./models/User');
   const users = await User.find({});
   res.json({ totalUsers: users.length, users });
@@ -66,34 +80,29 @@ app.use((req, res) => {
 // Global error handler (must be last)
 app.use(errorHandler);
 
-// ─── Database Connection ───────────────────────────────────────────────────────
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      family: 4, // Force IPv4 explicitly
-      serverSelectionTimeoutMS: 5000, 
-    });
-
-    console.log(`✅ MongoDB Connected to Atlas NATIVELY: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`❌ MongoDB connection error: ${error.message}`);
-    process.exit(1);
-  }
-};
-
-// ─── Start Server ──────────────────────────────────────────────────────────────
-const PORT = process.env.PORT || 5000;
-
-const startServer = async () => {
+// ─── Vercel Serverless Handler ──────────────────────────────────────────────────
+// This handles serverless deployment on Vercel
+module.exports = async (req, res) => {
   await connectDB();
-  app.listen(PORT, () => {
-    console.log(`🚀 User Management Service running on port ${PORT}`);
-    console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
-  });
-  // Service 4: Start notification cron scheduler
-  startScheduler();
+  return app(req, res);
 };
 
-startServer();
-
-module.exports = app;
+// ─── Local Development Server ───────────────────────────────────────────────────
+// Only start the server if running locally (not on Vercel)
+if (process.env.NODE_ENV !== 'production' || !process.env.VERCEL) {
+  const PORT = process.env.PORT || 5000;
+  
+  const startServer = async () => {
+    await connectDB();
+    app.listen(PORT, () => {
+      console.log(`🚀 User Management Service running on port ${PORT}`);
+      console.log(`📡 Health check: http://localhost:${PORT}/api/health`);
+    });
+    // Service 4: Start notification cron scheduler
+    if (startScheduler) {
+      startScheduler();
+    }
+  };
+  
+  startServer();
+}
